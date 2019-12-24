@@ -257,6 +257,8 @@ if __name__ == '__main__':
     # setup base distribution
     base_dist = D.MultivariateNormal(torch.zeros(2).to(args.device), args.base_sigma * torch.eye(2).to(args.device))
 
+    optimizer_state = None
+
     if args.restore_file:
         # get filename
         filename = os.path.basename(args.restore_file)

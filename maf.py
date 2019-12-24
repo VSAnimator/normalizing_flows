@@ -54,6 +54,7 @@ parser.add_argument('--n_epochs', type=int, default=50)
 parser.add_argument('--start_epoch', default=0, help='Starting epoch (for logging; to be overwritten when restoring file.')
 parser.add_argument('--lr', type=float, default=1e-4, help='Learning rate.')
 parser.add_argument('--log_interval', type=int, default=1000, help='How often to show loss statistics and save samples.')
+parser.add_argument('--entropy_multiplier', type=float, default=0., help='Scale importance of entropy in loss function')
 
 
 # --------------------
@@ -502,6 +503,30 @@ def train(model, dataloader, optimizer, epoch, args):
         x = x.view(x.shape[0], -1).to(args.device)
 
         loss = - model.log_prob(x, y if args.cond_label_size else None).mean(0)
+
+        # ADD IN ENTROPY LOSS #
+        if (args.entropy_multiplier > 0.):
+            n_samples = x.shape[0]
+            # Check if conditional model
+            if args.cond_label_size:
+                samples = []
+                labels = torch.eye(args.cond_label_size).to(args.device)
+
+                cond_samples = torch.floor(n_samples/args.cond_label_size)
+                for i in range(args.cond_label_size):
+                    # sample model base distribution and run through inverse model to sample data space
+                    u = model.base_dist.sample((cond_samples, args.n_components)).squeeze()
+                    labels_i = labels[i].expand(cond_samples, -1)
+                    sample, _ = model.inverse(u, labels_i)
+                    x_ent = - model.log_prob(sample, labels_i).mean(0)
+                    loss += (x_ent*args.entropy_multiplier)
+
+            else:
+                u = model.base_dist.sample((n_samples, args.n_components)).squeeze()
+                samples, _ = model.inverse(u)
+                x_ent = - model.log_prob(samples).mean(0)
+                loss += (x_ent*args.entropy_multiplier)
+        #######################
 
         optimizer.zero_grad()
         loss.backward()

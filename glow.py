@@ -489,8 +489,8 @@ def train_epoch(model, dataloader, optimizer, writer, epoch, args):
         if (args.entropy_multiplier > 0.):
             n_samples = x.shape[0]
             sample, _ = model.inverse(batch_size=n_samples, z_std=1.0) # Assume temperature 1.0 for now
-            x_ent = - model.log_prob(sample, bits_per_pixel=True).mean(0)
-            loss += x_ent
+            x_ent = - model.log_prob(sample, bits_per_pixel=True).mean(0) # Can explicitly try penalizing variance from mean as well...
+            loss += (x_ent*args.entropy_multiplier)
         #######################
 
         optimizer.zero_grad()
