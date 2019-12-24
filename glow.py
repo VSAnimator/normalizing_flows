@@ -58,6 +58,7 @@ parser.add_argument('--mini_data_size', type=int, default=None, help='Train only
 parser.add_argument('--grad_norm_clip', default=50, type=float, help='Clip gradients during training.')
 parser.add_argument('--checkpoint_grads', action='store_true', default=False, help='Whether to use gradient checkpointing in forward pass.')
 parser.add_argument('--n_bits', default=5, type=int, help='Number of bits for input images.')
+parser.add_argument('--entropy_multiplier', default=0., type=float, help='Scale importance of entropy in loss function')
 # distributed training params
 parser.add_argument('--distributed', action='store_true', default=False, help='Whether to use DistributedDataParallels on multiple machines and GPUs.')
 parser.add_argument('--world_size', type=int, default=1, help='Number of nodes for distributed training.')
@@ -95,7 +96,7 @@ def fetch_dataloader(args, train=True, data_dependent_init=False):
     dataset = {'mnist': MNIST, 'celeba': CelebA}[args.dataset]
 
     # load the specific dataset
-    dataset = dataset(root=args.data_dir, train=train, transform=transforms)
+    dataset = dataset(root=args.data_dir, train=train, transform=transforms, download=True)
 
     if args.mini_data_size:
         dataset.data = dataset.data[:args.mini_data_size]
@@ -483,6 +484,14 @@ def train_epoch(model, dataloader, optimizer, writer, epoch, args):
         x = x.requires_grad_(True if args.checkpoint_grads else False).to(args.device)  # requires_grad needed for checkpointing
 
         loss = - model.log_prob(x, bits_per_pixel=True).mean(0)
+
+        # ADD IN ENTROPY LOSS #
+        if (args.entropy_multiplier > 0.):
+            n_samples = x.shape[0]
+            sample, _ = model.inverse(batch_size=n_samples, z_std=1.0) # Assume temperature 1.0 for now
+            x_ent = - model.log_prob(sample, bits_per_pixel=True).mean(0)
+            loss += x_ent
+        #######################
 
         optimizer.zero_grad()
         loss.backward()

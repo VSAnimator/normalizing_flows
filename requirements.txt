@@ -1,0 +1,9 @@
+numpy
+torch>=1.1.0
+pandas
+matplotlib
+scipy
+scikit-learn
+tensorboardX
+h5py
+tqdm
