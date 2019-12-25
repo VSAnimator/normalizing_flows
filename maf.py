@@ -677,7 +677,7 @@ def plot_sample_and_density(model, target_dist, args, ranges_density=[[-5,20],[-
     fig, axs = plt.subplots(1, 2, figsize=(6,3))
 
     # sample target distribution and pass through model
-    data = target_dist.sample((2000,))
+    data = target_dist.sample((2000,)).to(args.device)
     u, _ = model(data)
 
     # plot density and sample
