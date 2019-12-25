@@ -654,7 +654,7 @@ def plot_density(dist, ax, ranges, flip_var_order=False):
         xy = xy.flip(1)
 
     # run uniform grid through model and plot
-    density = dist.log_prob(xy).exp()
+    density = dist.log_prob(xy).exp().cpu()
     ax.contour(xx, yy, density.view(n,n).data.numpy())
 
     # format
