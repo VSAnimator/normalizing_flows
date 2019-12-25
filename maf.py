@@ -681,7 +681,7 @@ def plot_sample_and_density(model, target_dist, args, ranges_density=[[-5,20],[-
     u, _ = model(data)
 
     # plot density and sample
-    plot_density(model, axs[0], ranges_density, args.flip_var_order)
+    plot_density(model, axs[0], ranges_density, args.flip_toy_var_order)
     plot_dist_sample(u, axs[1], ranges_sample)
 
     # format and save
