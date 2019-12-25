@@ -648,7 +648,7 @@ def plot_density(dist, ax, ranges, flip_var_order=False):
     xx1 = torch.linspace(xmin, xmax, n)
     xx2 = torch.linspace(ymin, ymax, n)
     xx, yy = torch.meshgrid(xx1, xx2)
-    xy = torch.stack((xx.flatten(), yy.flatten()), dim=-1).squeeze()
+    xy = torch.stack((xx.flatten(), yy.flatten()), dim=-1).squeeze().to(args.device)
 
     if flip_var_order:
         xy = xy.flip(1)
