@@ -682,7 +682,7 @@ def plot_sample_and_density(model, target_dist, args, ranges_density=[[-5,20],[-
 
     # plot density and sample
     plot_density(model, axs[0], ranges_density, args.flip_toy_var_order)
-    plot_dist_sample(u, axs[1], ranges_sample)
+    plot_dist_sample(u.cpu(), axs[1], ranges_sample)
 
     # format and save
     matplotlib.rcParams.update({'xtick.labelsize': 'xx-small', 'ytick.labelsize': 'xx-small'})
